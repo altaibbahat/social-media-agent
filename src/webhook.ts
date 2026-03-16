@@ -38,12 +38,12 @@ export async function handleWebhookEvent(
         const { comment_id, message, sender_name, sender_id, post_id } =
           change.value;
 
-        // Skip if the comment is from the page itself (avoid replying to own comments)
-        const pageId = entry.id;
-        if (sender_id === pageId) {
-          console.log("[Webhook] Skipping own comment");
-          continue;
-        }
+        // TODO: Re-enable self-comment skip after testing
+        // const pageId = entry.id;
+        // if (sender_id === pageId) {
+        //   console.log("[Webhook] Skipping own comment");
+        //   continue;
+        // }
 
         console.log(
           `[Webhook] New comment from ${sender_name}: "${message}" (ID: ${comment_id})`
