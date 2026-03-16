@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { generateReply } from "./ai";
-import { postComment } from "./facebook";
+import { postComment, isOwnComment } from "./facebook";
 
 const VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN || "sanatsepet2026";
 
@@ -39,17 +39,20 @@ export async function handleWebhookEvent(
           change.value;
 
         const pageId = entry.id;
-        if (sender_id === pageId) {
-          console.log("[Webhook] Skipping own comment");
+
+        // Check via Graph API if comment is from our own page
+        const ownComment = await isOwnComment(comment_id, pageId);
+        if (ownComment) {
+          console.log(`[Webhook] Skipping own comment (ID: ${comment_id})`);
           continue;
         }
 
         console.log(
-          `[Webhook] New comment from ${sender_name}: "${message}" (ID: ${comment_id})`
+          `[Webhook] New comment from ${sender_name || "unknown"}: "${message}" (ID: ${comment_id})`
         );
 
         try {
-          const reply = await generateReply(sender_name, message);
+          const reply = await generateReply(sender_name || "Kullanıcı", message);
           console.log(`[AI] Generated reply: "${reply}"`);
 
           await postComment(comment_id, reply);
